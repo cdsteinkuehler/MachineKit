@@ -245,6 +245,9 @@ for i in range(num_chan):
     h.newpin("raw" + str(i), hal.HAL_U32, hal.HAL_OUT)
     h.newpin("temp" + str(i), hal.HAL_FLOAT, hal.HAL_OUT)
 
+filtersize = 9
+history = [[0 for hi in range(filtersize)] for hj in range(num_chan)]
+j=0
 h.ready()
 
 try:
@@ -259,10 +262,14 @@ try:
             h['raw' + str(i)] = ADC_IN
             ADC_V = float(ADC_IN) * 1.8 / 4096.0
             temp = r2t(i,adc2r(ADC_V))
-            h['temp' + str(i)] = temp
+            j = j % filtersize
+            history[i][j] = temp 
+            hs = sorted(history[i])
+            h['temp' + str(i)] = hs[filtersize/2+1]
             #print ADC_IN, temp
             f.close()
             time.sleep(0.001)
+        j = j + 1
 
         time.sleep(0.049)
 except KeyboardInterrupt:
