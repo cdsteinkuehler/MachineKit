@@ -15,6 +15,14 @@
     <max_>300</max_>
   </bar>
 <hbox>
+<label><text>"Active:"</text></label>
+<led><halpin>"E0.active"</halpin><on_color>"green"</on_color><off_color>"gray"</off_color></led>
+<label><text>"In range:"</text></label>
+<led><halpin>"E0.stabalizing"</halpin><on_color>"green"</on_color><off_color>"gray"</off_color></led>
+<label><text>"Ready:"</text></label>
+<led><halpin>"E0.ready"</halpin><on_color>"green"</on_color><off_color>"gray"</off_color></led>
+</hbox>
+<hbox>
   <label>
     <text>"Bed Temp:"</text>
   </label>
@@ -26,6 +34,14 @@
 </hbox>
   <bar>
     <halpin>"Bed.Temp"</halpin>
-    <max_>300</max_>
+    <max_>150</max_>
   </bar>
+<hbox>
+<label><text>"Active:"</text></label>
+<led><halpin>"Bed.active"</halpin><on_color>"green"</on_color><off_color>"gray"</off_color></led>
+<label><text>"In Range:"</text></label>
+<led><halpin>"Bed.stabalizing"</halpin><on_color>"green"</on_color><off_color>"gray"</off_color></led>
+<label><text>"Ready:"</text></label>
+<led><halpin>"Bed.ready"</halpin><on_color>"green"</on_color><off_color>"gray"</off_color></led>
+</hbox>
 </pyvcp>

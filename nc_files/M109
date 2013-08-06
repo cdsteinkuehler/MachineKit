@@ -6,8 +6,11 @@
 # temperature to be achieved.
 # Example: M109 S185 
 
+halcmd sets e0.temp.set $1
 
-echo FIXME: $0
+while [ "`halcmd gets e0.temp.ready`" != "TRUE" ]; do
+  sleep .5
+done
 
 exit 0
 

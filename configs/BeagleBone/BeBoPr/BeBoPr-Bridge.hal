@@ -25,13 +25,16 @@ loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AX
 loadrt hal_bb_gpio output_pins=107,126,217,218,224,226 input_pins=108,109,110,114,117,118
 loadrt [PRUCONF](DRIVER) [PRUCONF](CONFIG)
 loadrt pid num_chan=2
-loadrt limit1 count=2
 
 
 # Python user-mode HAL module to read ADC value and generate a thermostat output for PWM
 # t = Thermistor table (only epcos_B57560G1104 or 1 supported for now)
 # a = analog input channel
 loadusr -Wn Therm /home/linuxcnc/linuxcnc/configs/BeagleBone/BeBoPr/ReadTemp.py -n Therm --num_chan 2 -t 1 1 -a 4 5
+
+# Python user-mode HAL module to control extruder and bed heaters
+loadusr -Wn tempcon0 /home/linuxcnc/linuxcnc/configs/BeagleBone/BeBoPr/TempCon.py -n tempcon0
+loadusr -Wn tempcon1 /home/linuxcnc/linuxcnc/configs/BeagleBone/BeBoPr/TempCon.py -n tempcon1
 
 # ################################################
 # THREADS
@@ -43,8 +46,6 @@ addf motion-command-handler               servo-thread
 addf motion-controller                    servo-thread
 addf pid.0.do-pid-calcs                   servo-thread
 addf pid.1.do-pid-calcs                   servo-thread
-addf limit1.0                             servo-thread
-addf limit1.1                             servo-thread
 addf [PRUCONF](DRIVER).update             servo-thread
 addf bb_gpio.write                        servo-thread
        
@@ -245,8 +246,10 @@ setp bb_gpio.p8.out-07.invert 1
 # If you change any names here, lots of things will break!
 newsig e0.temp.set   float
 newsig e0.temp.meas  float
+newsig e0.temp.ready bit
 newsig bed.temp.set  float
 newsig bed.temp.meas float
+newsig bed.temp.ready bit
 
 
 setp hal_pru_generic.pwmgen.00.pwm_period       10000000
@@ -266,57 +269,53 @@ setp hal_pru_generic.pwmgen.00.out.02.pin       0x52
 setp hal_pru_generic.pwmgen.00.out.02.enable    1
 setp hal_pru_generic.pwmgen.00.out.02.value     0.0
 
-# PID for Extruder 0 temperature control
-net e0.temp.meas    <= Therm.temp0
-net e0.temp.meas    => pid.0.feedback
+# Extruder 0 temperature control
+setp tempcon0.pid_active_range 10
+setp tempcon0.fast_pwm .5
+setp tempcon0.preheat_delay 10
+setp tempcon0.preheat_target 2
 
-sets e0.temp.set  0
-net e0.temp.set     => pid.0.command
+net estop-loop tempcon0.enable
+net e0.temp.meas Therm.temp0 tempcon0.temp_meas pid.0.feedback
+net e0.temp.set tempcon0.temp_set
+net e0.pc.command tempcon0.pid_command pid.0.command
+net e0.pc.enable tempcon0.pid_enable pid.0.enable
+net e0.pc.output tempcon0.pid_return pid.0.output
+net e0.pwm hal_pru_generic.pwmgen.00.out.00.value tempcon0.pwm
+net e0.temp.ready tempcon0.ready
 
-net e0.heater  <= pid.0.output
-net e0.heater  => limit1.0.in
-net e0.heaterl <= limit1.0.out
-net e0.heaterl => hal_pru_generic.pwmgen.00.out.00.value
+# Bed temperature control
+setp tempcon1.pid_active_range 4
+setp tempcon1.fast_pwm 1
+setp tempcon1.preheat_delay 0
+setp tempcon1.preheat_target 2
 
-# Limit heater PWM to positive values
-# PWM mimics hm2 implementation, which generates output for negative values
-setp limit1.0.min 0
-
-# PID for Bed temperature control
-net bed.temp.meas    <= Therm.temp1
-net bed.temp.meas    => pid.1.feedback
-
-sets bed.temp.set  0
-net bed.temp.set     => pid.1.command
-
-net bed.heater  <= pid.1.output
-net bed.heater  => limit1.1.in
-net bed.heaterl <= limit1.1.out
-net bed.heaterl => hal_pru_generic.pwmgen.00.out.02.value
-
-# Limit heater PWM to positive values
-# PWM mimics hm2 implementation, which generates output for negative values
-setp limit1.1.min 0
+net estop-loop tempcon1.enable
+net bed.temp.meas Therm.temp1 tempcon1.temp_meas pid.1.feedback
+net bed.temp.set tempcon1.temp_set
+net bed.pc.command tempcon1.pid_command pid.1.command
+net bed.pc.enable tempcon1.pid_enable pid.1.enable
+net bed.pc.output tempcon1.pid_return pid.1.output
+net bed.pwm hal_pru_generic.pwmgen.00.out.02.value tempcon1.pwm
+net bed.temp.ready tempcon1.ready
 
 # PID Parameters for adjusting temperature control
 # Extruder
 #setp pid.0.FF0      0  
 #setp pid.0.FF1      0  
 #setp pid.0.FF2      0  
-setp pid.0.Pgain  0.30
-setp pid.0.Igain  0.00001
-setp pid.0.Dgain  0.9375
-setp pid.0.maxerrorI 1.0
-setp pid.0.bias    0.5  
-setp pid.0.enable   1
+setp pid.0.Pgain  0.039
+setp pid.0.Igain  0.002
+setp pid.0.Dgain  0.432
+setp pid.0.maxerrorI 1
+setp pid.0.bias    0.28  
 
 # Bed
 #setp pid.1.FF0      0  
 #setp pid.1.FF1      0  
 #setp pid.1.FF2      0  
-setp pid.1.Pgain  1
-setp pid.1.Igain  0.0
-setp pid.1.Dgain  0.0
-setp pid.1.maxerrorI 1.0
-setp pid.1.bias    0.5  
-setp pid.1.enable   1
+setp pid.1.Pgain  .712
+setp pid.1.Igain  0.038
+setp pid.1.Dgain  3.37
+setp pid.1.maxerrorI 1
+setp pid.1.bias    0.55  
