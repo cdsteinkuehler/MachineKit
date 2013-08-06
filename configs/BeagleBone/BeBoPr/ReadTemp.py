@@ -268,7 +268,7 @@ try:
             h['temp' + str(i)] = hs[filtersize/2+1]
             #print ADC_IN, temp
             f.close()
-            time.sleep(0.001)
+            time.sleep(0.2)
         j = j + 1
 
         time.sleep(0.049)
