@@ -3,6 +3,12 @@
 
 net e0.temp.set  => pyvcp.E0.Temp.set
 net e0.temp.meas => pyvcp.E0.Temp
+net e0.active tempcon0.active pyvcp.E0.active
+net e0.stab tempcon0.stabalizing pyvcp.E0.stabalizing
+net e0.temp.ready pyvcp.E0.ready
 net bed.temp.set  => pyvcp.Bed.Temp.set
 net bed.temp.meas => pyvcp.Bed.Temp
+net bed.active tempcon1.active pyvcp.Bed.active
+net bed.stab tempcon1.stabalizing pyvcp.Bed.stabalizing
+net bed.temp.ready pyvcp.Bed.ready
 
