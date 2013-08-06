@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<pyvcp>
+<hbox>
+<vbox>
+<label><text>"Instructions"</text></label>
+<label><text>"1. Choose if the tuning is for an\nextruder or heated bed."</text></label>
+<label><text>"2. Set the temperature to a typical\ntemperature used for the heater\nbeing tuned."</text></label>
+<label><text>"3. Check the enable button.  Wait for\nit to go through a couple of heating\n and cooling cycles."</text></label>
+<label><text>"4. Select the desired PID option.\nThe three choices use slightly different\nparameters for calculating the PID\nvalues."</text></label>
+<label><text>"5. Record the P, I, D, and maxerrorI\nresults from the panel.  Use these\nfor the pid parameters in the hal file.\nIt might be helpful to record the\nvalues for all three PID options, and\nexperiment to find the best set."</text></label>
+<label><text>"6. Test the parameters.  While doing\nso, use the halmeter to monitor\nthe pwm value."</text></label>
+<label><text>"7. When the temperature has stabalized,\ntake note of the pwm value.\nUse this value (two decimal palces is enough)\nas the bias parmater\nfor the pid controller."</text></label>
+<label><text>"8. Type 'quit' at the halcmd: prompt\nwhen finished."</text></label>
+<label><text>" Feel free to experiment and/or provide\nfeedback to troy@thismuch.net."</text></label>
+</vbox>
+<vbox>
+<hbox><radiobutton><choices>["Extruder","Heated Bed"]</choices><halpin>"forextruder"</halpin></radiobutton></hbox>
+<hbox> <label><text>"Set Temp:"</text></label><scale> <halpin>"temp"</halpin><min_>45</min_><max_>225</max_><initval>150</initval><resolution>5</resolution> </scale> </hbox>
+<hbox> <checkbutton> <text>"Enable:"</text> <halpin>"enable"</halpin> </checkbutton> </hbox>
+<hbox> <label> <text>"PWM:"</text> </label> <number> <halpin>"pwm"</halpin> <format>"1.3f"</format> </number> </hbox>
+<hbox> <label> <text>"Cycle:"</text> </label> <u32> <halpin>"cycle"</halpin></u32> </hbox>
+<hbox> <label> <text>"Step Time:"</text> </label> <number> <halpin>"steptime"</halpin> <format>"3.3f"</format> </number> </hbox>
+<hbox> <label> <text>"Current Temp:"</text> </label> <number> <halpin>"current"</halpin> <format>"3.1f"</format> </number> </hbox>
+<hbox> <label> <text>"Heating:"</text> </label> <led> <halpin>"heating"</halpin></led> </hbox>
+<vbox><relief>GROOVE</relief><bd>2</bd>
+<radiobutton><choices>["Classic-PID", "Some-Overshoot", "No-Overshoot"]</choices><halpin>"pidselect"</halpin>
+</radiobutton>
+<hbox> <label> <text>"P:"</text> </label> <number> <halpin>"p"</halpin> <format>"3.3f"</format> </number> </hbox>
+<hbox> <label> <text>"I:"</text> </label> <number> <halpin>"i"</halpin> <format>"3.3f"</format> </number> </hbox>
+<hbox> <label> <text>"D:"</text> </label> <number> <halpin>"d"</halpin> <format>"3.3f"</format> </number> </hbox>
+<hbox> <label> <text>"maxerrorI:"</text> </label> <number> <halpin>"errori"</halpin> <format>"3.3f"</format> </number> </hbox>
+</vbox>
+<hbox> <label> <text>"Last change:"</text> </label> <number> <halpin>"change"</halpin> <format>"3.3f"</format> </number> </hbox>
+<hbox> <label> <text>"Min:"</text> </label> <number> <halpin>"min"</halpin> <format>"3.1f"</format> </number> </hbox>
+<hbox> <label> <text>"Max:"</text> </label> <number> <halpin>"max"</halpin> <format>"3.1f"</format> </number> </hbox>
+<hbox> <label> <text>"high:"</text> </label> <number> <halpin>"high"</halpin> <format>"1.3f"</format> </number> </hbox>
+<hbox> <label> <text>"low:"</text> </label> <number> <halpin>"low"</halpin> <format>"1.3f"</format> </number> </hbox>
+<hbox> <label> <text>"Time heating:"</text> </label> <number> <halpin>"theating"</halpin> <format>"3.1f"</format> </number> </hbox>
+<hbox> <label> <text>"Time cooling:"</text> </label> <number> <halpin>"tcooling"</halpin> <format>"3.1f"</format> </number> </hbox>
+<hbox> <label> <text>"Ku:"</text> </label> <number> <halpin>"ku"</halpin> <format>"3.3f"</format> </number> </hbox>
+<hbox> <label> <text>"Tu:"</text> </label> <number> <halpin>"tu"</halpin> <format>"3.3f"</format> </number> </hbox>
+</vbox>
+</hbox>
+</pyvcp>

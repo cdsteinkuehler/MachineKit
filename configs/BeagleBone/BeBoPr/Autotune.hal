@@ -1,0 +1,64 @@
+#
+# Instructions:
+#
+# 1. Using the main hal file as a reference, make the necessary changes for
+#    the temperature input and pwm output.
+#
+# 2. Run with:
+#      halrun -I Autotune.py
+#
+# 3. Follow the directions on the control panel.
+#
+# 4. Type 'quit' on the hal command line.
+#
+#
+
+loadusr -w /home/linuxcnc/linuxcnc/configs/BeagleBone/BeBoPr/setup.bridge.sh
+loadrt threads name1=main-thread period1=1000000
+loadrt hal_pru_generic prucode=/home/linuxcnc/linuxcnc/rtlib/pru_generic.bin num_pwmgens=1
+loadusr -Wn atp pyvcp -c atp Autotune.panel.xml 
+loadusr -Wn autotune /home/linuxcnc/linuxcnc/configs/BeagleBone/BeBoPr/Autotune.py
+
+#
+# Edit this line, if necessary, to get the temperature reading for the item being tuned
+loadusr -Wn therm /home/linuxcnc/linuxcnc/configs/BeagleBone/BeBoPr/ReadTemp.py -n therm --num_chan 1 -t 1 -a 1 
+net at.meas therm.temp0
+
+
+addf hal_pru_generic.capture-position main-thread
+addf hal_pru_generic.update main-thread
+
+# Edit this line, if necessary, to configure the correct pwm generator
+setp hal_pru_generic.pwmgen.00.out.00.pin       0x52
+net at.pwm hal_pru_generic.pwmgen.00.out.00.value
+setp hal_pru_generic.pwmgen.00.out.00.enable    1
+
+setp hal_pru_generic.pwmgen.00.pwm_period 10000000
+
+net at.pwm atp.pwm autotune.pwm
+net at.meas atp.current autotune.current
+net at.for atp.forextruder.Extruder autotune.forextruder
+net at.temp atp.temp-f autotune.temp
+net at.cycle atp.cycle autotune.cycle
+net at.enable atp.enable autotune.enable
+net at.heating atp.heating autotune.heating
+net at.tcooling atp.tcooling autotune.tcooling
+net at.theating atp.theating autotune.theating
+net at.ku atp.ku autotune.ku
+net at.tu atp.tu autotune.tu
+#net at.preheat atp.preheat-f autotune.preheat
+net at.high atp.high autotune.high
+net at.low atp.low autotune.low
+net at.min atp.min autotune.min
+net at.max atp.max autotune.max
+net at.p atp.p autotune.p
+net at.i atp.i autotune.i
+net at.d atp.d autotune.d
+net at.ie atp.errori autotune.errori
+net at.steptime atp.steptime autotune.steptime
+net at.pidClassic atp.pidselect.Classic-PID autotune.pidClassic
+net at.pidNoOS atp.pidselect.No-Overshoot autotune.pidSomeOS
+net at.pidSomeOS atp.pidselect.Some-Overshoot autotune.pidNoOS
+net at.change atp.change autotune.change
+
+start
