@@ -135,7 +135,7 @@ bool print_member(pb_istream_t *stream, const pb_field_t *field, void *cbdata)
 #if 0
 bool print_object(pb_istream_t *stream, const pb_field_t *field, char *tag)
 {
-    pb_Object obj = {0};
+    machinetalk_Object obj = {0};
     obj = (machinetalk_Object) {
 	.name.funcs.decode = print_string,
 	.name.arg = "object.name = '%s'\n",
