@@ -31,7 +31,7 @@ static int describe_toplevel_object_cb(hal_object_ptr o,
 // add HAL objects recursively to a Container
 // reflecting the object hierarchy
 int halg_object2pb(const bool use_hal_mutex,
-		   pb::Container *msg,
+		   machinetalk::Container *msg,
 		   const char *name,     // selector or NULL
 		   const int type,       // selector or 0
 		   const int id)         // selector or 0
@@ -68,7 +68,7 @@ describe_group(htself_t *self,
     WITH_HAL_MUTEX();
     int ret = halg_object2pb(0, &self->tx, group, HAL_GROUP, 0);
     if (ret != 1)  {
-	self->tx.set_type(pb::MT_HALRCOMP_ERROR);
+	self->tx.set_type(machinetalk::MT_HALRCOMP_ERROR);
 	note_printf(self->tx, "no such group: '%s'", group);
 	return send_pbcontainer(from, self->tx, socket);
     }
@@ -86,7 +86,7 @@ describe_comp(htself_t *self,
     WITH_HAL_MUTEX();
     int ret = halg_object2pb(0, &self->tx, comp, HAL_COMPONENT, 0);
     if (ret != 1)  {
-	self->tx.set_type(pb::MT_HALRCOMP_ERROR);
+	self->tx.set_type(machinetalk::MT_HALRCOMP_ERROR);
 	note_printf(self->tx, "no such component: '%s'", comp);
 	return send_pbcontainer(from, self->tx, socket);
     }
@@ -96,7 +96,7 @@ describe_comp(htself_t *self,
 // add protocol parameters the subscriber might want to know about
 int describe_parameters(htself_t *self)
 {
-    pb::ProtocolParameters *pp = self->tx.mutable_pparams();
+    machinetalk::ProtocolParameters *pp = self->tx.mutable_pparams();
     pp->set_keepalive_timer(self->cfg->keepalive_timer);
     pp->set_group_timer(self->cfg->default_group_timer);
     pp->set_rcomp_timer(self->cfg->default_rcomp_timer);
@@ -112,7 +112,7 @@ static int describe_toplevel_object_cb(hal_object_ptr o,
     if (!hh_is_toplevel(hh_get_object_type(o.hdr)))
 	return 0;
 
-    pb::Container *msg = (pb::Container *) args->user_ptr1;
+    machinetalk::Container *msg = (machinetalk::Container *) args->user_ptr1;
 
     switch (hh_get_object_type(o.hdr)) {
 

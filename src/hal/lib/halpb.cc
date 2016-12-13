@@ -1,9 +1,9 @@
 #include "halpb.hh"
 
-int halpr_describe_pin(hal_pin_t *pin, pb::Pin *pbpin)
+int halpr_describe_pin(hal_pin_t *pin, machinetalk::Pin *pbpin)
 {
-    pbpin->set_type((pb::ValueType) pin->type);
-    pbpin->set_dir((pb::HalPinDirection) pin->dir);
+    pbpin->set_type((machinetalk::ValueType) pin->type);
+    pbpin->set_dir((machinetalk::HalPinDirection) pin->dir);
     pbpin->set_handle(ho_id(pin));
     pbpin->set_name(ho_name(pin));
     pbpin->set_linked(pin_is_linked(pin));
@@ -14,12 +14,12 @@ int halpr_describe_pin(hal_pin_t *pin, pb::Pin *pbpin)
     return 0;
 }
 
-int halpr_describe_param(hal_param_t *param, pb::Param *pbparam)
+int halpr_describe_param(hal_param_t *param, machinetalk::Param *pbparam)
 {
     pbparam->set_name(ho_name(param));
     pbparam->set_handle(ho_id(param));
-    pbparam->set_type((pb::ValueType) param->type);
-    pbparam->set_dir((pb::HalParamDirection) param->dir);
+    pbparam->set_type((machinetalk::ValueType) param->type);
+    pbparam->set_dir((machinetalk::HalParamDirection) param->dir);
     assert(hal_param2pb(param, pbparam) == 0);
     return 0;
 }
@@ -27,17 +27,17 @@ int halpr_describe_param(hal_param_t *param, pb::Param *pbparam)
 int pbadd_owned(hal_object_ptr o, foreach_args_t *args)
 {
     int type = hh_get_object_type(o.hdr);
-    pb::Component *pbcomp = (pb::Component *)args->user_ptr1;
+    machinetalk::Component *pbcomp = (machinetalk::Component *)args->user_ptr1;
     switch (type) {
     case HAL_PARAM:
 	{
-	    pb::Param *pbparam = pbcomp->add_param();
+	    machinetalk::Param *pbparam = pbcomp->add_param();
 	    halpr_describe_param(o.param, pbparam);
 	}
 	break;
     case HAL_PIN:
 	{
-	    pb::Pin *pbpin = pbcomp->add_pin();
+	    machinetalk::Pin *pbpin = pbcomp->add_pin();
 	    halpr_describe_pin(o.pin, pbpin);
 	}
 	break;
@@ -49,7 +49,7 @@ int pbadd_owned(hal_object_ptr o, foreach_args_t *args)
 // transfrom a HAL component into a Component protobuf.
 // does not aquire the HAL mutex.
 int
-halpr_describe_component(hal_comp_t *comp, pb::Component *pbcomp)
+halpr_describe_component(hal_comp_t *comp, machinetalk::Component *pbcomp)
 {
     pbcomp->set_name(ho_name(comp));
     pbcomp->set_comp_id(ho_id(comp));
@@ -72,11 +72,11 @@ halpr_describe_component(hal_comp_t *comp, pb::Component *pbcomp)
 }
 
 int
-halpr_describe_signal(hal_sig_t *sig, pb::Signal *pbsig)
+halpr_describe_signal(hal_sig_t *sig, machinetalk::Signal *pbsig)
 {
     pbsig->set_name(ho_name(sig));
     pbsig->set_handle(ho_id(sig));
-    pbsig->set_type((pb::ValueType)sig->type);
+    pbsig->set_type((machinetalk::ValueType)sig->type);
     pbsig->set_readers(sig->readers);
     pbsig->set_writers(sig->writers);
     pbsig->set_bidirs(sig->bidirs);
@@ -84,7 +84,7 @@ halpr_describe_signal(hal_sig_t *sig, pb::Signal *pbsig)
 }
 
 int
-halpr_describe_ring(hal_ring_t *ring, pb::Ring *pbring)
+halpr_describe_ring(hal_ring_t *ring, machinetalk::Ring *pbring)
 {
     pbring->set_name(ho_name(ring));
     pbring->set_handle(ho_id(ring));
@@ -99,7 +99,7 @@ halpr_describe_ring(hal_ring_t *ring, pb::Ring *pbring)
     return 0;
 }
 
-int halpr_describe_funct(hal_funct_t *funct, pb::Function *pbfunct)
+int halpr_describe_funct(hal_funct_t *funct, machinetalk::Function *pbfunct)
 {
     int id;
     hal_comp_t *owner = halpr_find_owning_comp(ho_owner_id(funct));
@@ -117,7 +117,7 @@ int halpr_describe_funct(hal_funct_t *funct, pb::Function *pbfunct)
     return 0;
 }
 
-int halpr_describe_thread(hal_thread_t *thread, pb::Thread *pbthread)
+int halpr_describe_thread(hal_thread_t *thread, machinetalk::Thread *pbthread)
 {
     pbthread->set_name(ho_name(thread));
     pbthread->set_handle(ho_id(thread));
@@ -141,27 +141,27 @@ int halpr_describe_thread(hal_thread_t *thread, pb::Thread *pbthread)
 }
 
 
-int halpr_describe_member(hal_member_t *member, pb::Member *pbmember)
+int halpr_describe_member(hal_member_t *member, machinetalk::Member *pbmember)
 {
     hal_sig_t *sig = (hal_sig_t *)SHMPTR(member->sig_ptr);
-    pbmember->set_mtype(pb::HAL_SIGNAL);
+    pbmember->set_mtype(machinetalk::HAL_SIGNAL);
     pbmember->set_userarg1(member->userarg1);
     if (sig->type == HAL_FLOAT)
 	pbmember->set_epsilon(hal_data->epsilon[member->eps_index]);
-    pb::Signal *pbsig = pbmember->mutable_signal();
+    machinetalk::Signal *pbsig = pbmember->mutable_signal();
     halpr_describe_signal(sig, pbsig);
     return 0;
 }
 
 static int describe_member(hal_object_ptr o, foreach_args_t *args)
 {
-    pb::Group *pbgroup =  (pb::Group *) args->user_ptr1;
-    pb::Member *pbmember = pbgroup->add_member();
+    machinetalk::Group *pbgroup =  (machinetalk::Group *) args->user_ptr1;
+    machinetalk::Member *pbmember = pbgroup->add_member();
     halpr_describe_member(o.member, pbmember);
     return 0;
 }
 
-int halpr_describe_group(hal_group_t *g, pb::Group *pbgroup)
+int halpr_describe_group(hal_group_t *g, machinetalk::Group *pbgroup)
 {
     pbgroup->set_name(ho_name(g));
     pbgroup->set_handle(ho_id(g));

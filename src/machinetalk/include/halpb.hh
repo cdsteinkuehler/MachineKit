@@ -27,16 +27,16 @@
 #include "message.pb.h"
 
 // in halpb.cc:
-int halpr_describe_signal(hal_sig_t *sig, pb::Signal *pbsig);
-int halpr_describe_pin(hal_pin_t *pin, pb::Pin *pbpin);
-int halpr_describe_ring(hal_ring_t *ring, pb::Ring *pbring);
-int halpr_describe_funct(hal_funct_t *funct, pb::Function *pbfunct);
-int halpr_describe_thread(hal_thread_t *thread, pb::Thread *pbthread);
-int halpr_describe_component(hal_comp_t *comp, pb::Component *pbcomp);
-int halpr_describe_group(hal_group_t *g, pb::Group *pbgroup);
-int halpr_describe_member(hal_member_t *member, pb::Member *pbmember);
+int halpr_describe_signal(hal_sig_t *sig, machinetalk::Signal *pbsig);
+int halpr_describe_pin(hal_pin_t *pin, machinetalk::Pin *pbpin);
+int halpr_describe_ring(hal_ring_t *ring, machinetalk::Ring *pbring);
+int halpr_describe_funct(hal_funct_t *funct, machinetalk::Function *pbfunct);
+int halpr_describe_thread(hal_thread_t *thread, machinetalk::Thread *pbthread);
+int halpr_describe_component(hal_comp_t *comp, machinetalk::Component *pbcomp);
+int halpr_describe_group(hal_group_t *g, machinetalk::Group *pbgroup);
+int halpr_describe_member(hal_member_t *member, machinetalk::Member *pbmember);
 
-static inline int hal_pin2pb(hal_pin_t *hp, pb::Pin *p)
+static inline int hal_pin2pb(hal_pin_t *hp, machinetalk::Pin *p)
 {
     const hal_data_u *vp  = pin_value(hp);
     switch (hp->type) {
@@ -58,7 +58,7 @@ static inline int hal_pin2pb(hal_pin_t *hp, pb::Pin *p)
     return 0;
 }
 
-static inline int hal_sig2pb(hal_sig_t *sp, pb::Signal *s)
+static inline int hal_sig2pb(hal_sig_t *sp, machinetalk::Signal *s)
 {
     const hal_data_u *vp = sig_value(sp);
     switch (sp->type) {
@@ -80,7 +80,7 @@ static inline int hal_sig2pb(hal_sig_t *sp, pb::Signal *s)
     return 0;
 }
 
-static inline int hal_param2pb(const hal_param_t *pp, pb::Param *p)
+static inline int hal_param2pb(const hal_param_t *pp, machinetalk::Param *p)
 {
     const hal_data_u *vp = param_value(pp);
 
@@ -103,7 +103,7 @@ static inline int hal_param2pb(const hal_param_t *pp, pb::Param *p)
     return 0;
 }
 
-static inline int hal_pbpin2u(const pb::Pin *p, hal_data_u *vp)
+static inline int hal_pbpin2u(const machinetalk::Pin *p, hal_data_u *vp)
 {
     switch (p->type()) {
     default:
@@ -124,7 +124,7 @@ static inline int hal_pbpin2u(const pb::Pin *p, hal_data_u *vp)
     return 0;
 }
 
-static inline int hal_pbsig2u(const pb::Signal *s, hal_data_u *vp)
+static inline int hal_pbsig2u(const machinetalk::Signal *s, hal_data_u *vp)
 {
     switch (s->type()) {
     default:
