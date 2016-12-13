@@ -78,5 +78,5 @@ Nanopb:
 
 use the <messagename>_msgid symbol which defines an integer constant
 
-NB: due to the use of 'package pb;', for example, the nanopb symbol for
+NB: due to the use of 'package machinetalk;', for example, the nanopb symbol for
 message 'Container' is 'pb_Container_msgid'
