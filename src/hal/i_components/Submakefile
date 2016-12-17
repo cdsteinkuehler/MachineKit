@@ -1,0 +1,72 @@
+
+HALICOMPDIR= hal/i_components
+
+HALICOMP_SUBMAKEFILE= $(HALICOMPDIR)/Submakefile
+
+
+ifeq ($(BUILD_KBUILD),yes)
+ICOMPS := $(patsubst $(BASEPWD)/%,%,$(wildcard \
+	$(BASEPWD)/$(HALICOMPDIR)/*.icomp ))
+include $(patsubst %.icomp, $(BASEPWD)/halcomp-srcs/%.mak, $(ICOMPS))
+else
+ICOMPS := $(sort $(wildcard $(HALICOMPDIR)/*.icomp))
+
+ICOMP_DOCPAGES := $(patsubst $(HALICOMPDIR)/%.icomp, ../man/man9/%.asciidoc, \
+	$(ICOMPS))
+
+i_docpages: $(ICOMP_DOCPAGES)
+
+ifeq ($(BUILD_DOCS),yes)
+    TARGETS += i_docpages
+    .PHONY: i_docpages
+endif
+
+ifeq ($(TRIVIAL_BUILD)+$(BUILD_THREAD_MODULES),no+yes)
+-include $(patsubst %.icomp, $(BASEPWD)/halcomp-srcs/%.mak,\
+	$(ICOMPS))
+endif # TRIVIAL_BUILD == no
+endif
+
+
+ifeq ($(BUILD_THREAD_MODULES),yes)
+obj-m += \
+	$(patsubst hal/i_components/%.icomp, %.o, $(ICOMPS))
+endif
+
+ICOMP_DOCPAGES := $(patsubst $(HALICOMPDIR)/%.icomp, ../man/man9/%.asciidoc, \
+	$(ICOMPS))
+
+$(ICOMP_DOCPAGES): ../man/man9/%.asciidoc: $(HALICOMPDIR)/%.icomp ../bin/instcomp
+	$(ECHO) Making icomp docpage $(notdir $@)
+	@mkdir -p $(dir $@)
+	$(Q)../bin/instcomp --document 	\
+	--frontmatter="edit-repo: $(EDIT_REPO)" 	\
+	--frontmatter="edit-branch: $(EDIT_BRANCH)" 	\
+		-o $@ $<
+
+ifeq ($(BUILD_ALL_FLAVORS),yes)
+# .c and .mak files are identical for all flavors
+#
+# in the top-level make, build them once in a common location
+halcomp-srcs/%.c: %.icomp ../bin/instcomp
+	$(ECHO) "Preprocessing $(notdir $<)"
+	@mkdir -p $(dir $@)
+	$(Q)../bin/instcomp --require-license -o $@ $<
+
+halcomp-srcs/%.mak: %.icomp $(HALICOMP_SUBMAKEFILE)
+	$(ECHO) "Creating $(notdir $@)"
+	$(ECHO) "Creating $@"
+	@mkdir -p $(dir $@)
+	$(Q)echo "$(notdir $*)-objs := halcomp-srcs/$*.o" > $@.tmp
+	$(Q)echo "\$$(RTLIBDIR)/$(notdir $*)\$$(MODULE_EXT): \\" >> $@.tmp
+	$(Q)echo "    \$$(OBJDIR)/halcomp-srcs/$*.o" >> $@.tmp
+	$(Q)mv -f $@.tmp $@
+
+# Generate .c and .mak files before the modules target
+modules: $(patsubst %.icomp, halcomp-srcs/%.c, \
+	$(ICOMPS) )
+modules: $(patsubst %.icomp, halcomp-srcs/%.mak, \
+	$(ICOMPS))
+endif # BUILD_ALL_FLAVORS == yes
+
+
