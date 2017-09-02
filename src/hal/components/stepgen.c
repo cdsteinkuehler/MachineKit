@@ -475,7 +475,8 @@ int rtapi_app_main(void)
        the first time.  We load a default value here to avoid glitches at
        startup, but all these 'constants' are recomputed inside
        'update_freq()' using the real period. */
-    old_periodns = periodns = 50000;
+    old_periodns = 50000;
+    periodns = 50000;
     old_dtns = 1000000;
     /* precompute some constants */
     periodfp = periodns * 0.000000001;
